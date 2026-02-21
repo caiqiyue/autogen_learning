@@ -1,0 +1,10 @@
+﻿# Ignore specific notebooks
+1. MicroSoft AutoGen 基础入门.ipynb
+2. MicroSoft AutoGen 代理对话与人机交互源码解析.ipynb
+
+# Local environment secrets
+.env
+!.env.example
+
+autogen/
+__pycache__/
