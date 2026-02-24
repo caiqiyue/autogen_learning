@@ -561,7 +561,7 @@ LLM 只能输出文本，不能真正“操作世界”。
 
 
 
-### LLM为主的agent
+### LLM为主的agent（case1）
 
 &emsp;&emsp;`AutoGen` 框架支持以下三种类型的大模型接入，分别是：
 
@@ -589,3 +589,246 @@ AutoGen Non-OpenAI Models：https://microsoft.github.io/autogen/0.2/docs/topics/
 
 
 
+
+
+&emsp;&emsp;`class ConversableAgent(LLMAgent)` 是通用可对话代理的类，因此***\*它的核心功能是可以直接针对用户输入的问题生成大模型的响应，并且返回到用户端。 另外，因为需要接入大模型去驱动代理，所以这里需要使用** **`ConversableAgent`** **类中的****`llm_config`****参数来指定大模型实例。\**** 而关于如何使用，我们需要关注一下`class ConversableAgent(LLMAgent)`源码中的定义逻辑，主要有以下两个关注点：
+
+&emsp;&emsp;首先，根据`class ConversableAgent(LLMAgent)`类的定义，`llm_config`需要接收的是一个字典：
+
+```
+llm_config: Optional[Union[Dict, Literal[False]]] = None,
+```
+
+
+
+&emsp;&emsp;其次，在`_validate_llm_config`方法中，其校验的逻辑如下：
+
+```python
+    def _validate_llm_config(self, llm_config):
+        assert llm_config in (None, False) or isinstance(
+            llm_config, dict
+        ), "llm_config must be a dict or False or None."
+        if llm_config is None:
+            llm_config = self.DEFAULT_CONFIG
+        self.llm_config = self.DEFAULT_CONFIG if llm_config is None else llm_config
+        # TODO: more complete validity check
+        if self.llm_config in [{}, {"config_list": []}, {"config_list": [{"model": ""}]}]:
+            raise ValueError(
+                "When using OpenAI or Azure OpenAI endpoints, specify a non-empty 'model' either in 'llm_config' or in each config of 'config_list'."
+            )
+        self.client = None if self.llm_config is False else OpenAIWrapper(**self.llm_config)
+```
+
+
+
+&emsp;&emsp;这里会验证 `llm_config` 必须是 `None`、`False` 或字典。如果 `llm_config` 包含键 `config_list`，则该键值必须是一个列表，其中每个字典对象需要包含一个有效的 'model'。如果没有提供 config_list 或其中的 model 为空，则会抛出错误。因此，如果我们这里想接入一个`OpenAI`的`GPT`模型，接入规范就如下所示：
+
+```python
+import os
+
+from autogen import ConversableAgent
+
+agent = ConversableAgent(
+    name="chatbot",
+    llm_config={"config_list": 
+                [{"model": "gpt-4o-mini", 
+                  "api_key": os.environ.get("OPENAI_API_KEY")}]},
+)
+```
+
+
+
+&emsp;&emsp;`config_list` 允许指定不同的端点和配置 被使用。在此方法中，`config_list` 中的每个字典必须包含**至少一个 `model` 和 `api_key` 的组合**。如果缺少 `model` 或 `api_key`，会触发 ValueError。其可以使用的参数如下：
+
+| 参数名称       | 类型        | 必需性    | 描述                                                                 |
+| -------------- | ----------- | --------- | -------------------------------------------------------------------- |
+| `model`        | `str`       | 必需      | 要使用的模型的标识符，例如 `'gpt-4'`，`'gpt-3.5-turbo'`。            |
+| `api_key`      | `str`       | 可选      | 验证模型 API 端点请求所需的 API 密钥。                               |
+| `api_rate_limit` | `float`   | 可选      | 指定每秒允许的最大 API 请求数。                                      |
+| `base_url`     | `str`       | 可选      | API 端点的基本 URL，这是 API 调用所定向的根地址。                   |
+| `tags`         | `List[str]` | 可选      | 可用于过滤的标签。                                                  |
+
+
+
+&emsp;&emsp;最后，如果想要触发大模型调用并且得到最终的响应，则需要在定义的`agent`实例中（即`ConversableAgent`）调用`generate_reply`方法。`generate_reply` 是 `ConversableAgent` 的核心功能之一，此函数会根据接收到的消息和配置，通过一系列注册的处理函数和回复生成函数，来产生一个回复。
+
+```python
+  async def a_generate_reply(
+        self,
+        messages: Optional[List[Dict[str, Any]]] = None,
+        sender: Optional["Agent"] = None,
+        **kwargs: Any,
+    ) -> Union[str, Dict[str, Any], None]:
+        if all((messages is None, sender is None)):
+            error_msg = f"Either {messages=} or {sender=} must be provided."
+            logger.error(error_msg)
+            raise AssertionError(error_msg)
+
+        if messages is None:
+            messages = self._oai_messages[sender]
+
+        messages = self.process_all_messages_before_reply(messages)
+
+        messages = self.process_last_received_message(messages)
+
+        for reply_func_tuple in self._reply_func_list:
+            reply_func = reply_func_tuple["reply_func"]
+            if "exclude" in kwargs and reply_func in kwargs["exclude"]:
+                continue
+
+            if self._match_trigger(reply_func_tuple["trigger"], sender):
+                if inspect.iscoroutinefunction(reply_func):
+                    final, reply = await reply_func(
+                        self, messages=messages, sender=sender, config=reply_func_tuple["config"]
+                    )
+                else:
+                    final, reply = reply_func(self, messages=messages, sender=sender, config=reply_func_tuple["config"])
+                if final:
+                    return reply
+        return self._default_auto_reply
+    
+它实现了一个“可插拔回复策略链”：
+
+准备/标准化消息
+
+遍历策略列表（可排除）
+
+策略按 trigger 决定是否执行
+
+执行后返回 (final, reply)
+
+第一个 final=True 直接作为最终回复，否则返回默认回复
+```
+
+
+
+&emsp;&emsp;源码 `generate_reply` 的逻辑主要围绕以下两点：`
+
+- **第一步：根据消息内容和发送方，决定是否执行普通问答逻辑或触发与其他 Agent 的交互**。
+  - 普通问答: 如果当前的 `messages` 表示普通对话内容，那么直接按消息上下文调用适当的回复逻辑（如调用 LLM 或简单地使用默认回复）。
+  - 如果有一个明确的 `sender`，则消息会被理解为来自某个特定 `Agent` 的请求。
+  <br>
+  <br> 
+- **第二步：在会话过程中，检查是否需要调用不同类型的回复函数，并按优先级顺序依次尝试生成响应**。回复函数的类型与优先级为：
+  - check_termination_and_human_reply：检查是否需要终止会话或请求人类输入。
+  - generate_function_call_reply：处理函数调用（已废弃，建议使用 tool_calls）。
+  - generate_tool_calls_reply：生成工具调用相关的回复。
+  - generate_code_execution_reply：根据消息中的代码块执行代码并返回结果。
+  - generate_oai_reply：通过 LLM 模型生成对话回复。
+
+
+
+&emsp;&emsp;`ConversableAgent`类中`generate_reply`方法定义过程其实是比较复杂的，但使用非常简单。对于普通的大模型对话交互过程，我们只需要传入`messages`字段，`generate_reply` 就会自动处理所有的内部逻辑，因此调用代码如下：
+
+```python
+# 调用代理生成回复
+reply = agent.generate_reply(
+    messages=[
+        {
+            "role": "user",
+            "content": "你好，请你非常详细的介绍一下你自己"
+        }
+    ]
+)
+
+# 打印生成的回复
+print(reply)
+```
+
+
+
+#### caching缓存机制
+
+&emsp;&emsp;在成功使用`ConversableAgent`接入在线大模型生成问答的回复，这里有一点需要格外注意：***\*当我们使用相同的大模型并提出相同的问题时，会发现其回复速度非常快，且内容与之前一致\****。
+
+&emsp;&emsp;这是因为 `AutoGen` 框架的设计采用了缓存机制。该对话过程支持对 `API` 请求进行缓存，以便在发出相同请求时可以重复使用之前的响应结果。这种机制在重复或持续的实验中非常有用，有助于提高结果的可重复性并节省成本。***\*从版本** **`0.2.8`** **开始，****`AutoGen`** **提供了一个可配置的上下文管理器，允许我们轻松配置** **`LLM`** **缓存，支持多种缓存类型，如磁盘缓存（DiskCache）、Redis 缓存（RedisCache）或 Azure Cosmos DB 缓存。\****
+
+&emsp;&emsp;其配置的方法在 `llm_config` 参数中，默认会开启缓存机制并存储在磁盘的上下文管理器中。如果想在调用`generate_reply`方法时禁用缓存，可以通过在代理的 `llm_config` 中设置 `cache_seed` 参数为 `None` 来实现。代码如下：
+
+
+
+```
+import os
+
+from autogen import ConversableAgent
+
+agent = ConversableAgent(
+    name="chatbot",
+    llm_config={
+        "cache_seed": None,  # 禁用缓存
+        "config_list": 
+                [{"model": "gpt-4o-mini", 
+                  "api_key": os.environ.get("OPENAI_API_KEY")}]},
+)
+
+# 调用代理生成回复
+reply = agent.generate_reply(
+    messages=[
+        {
+            "role": "user",
+            "content": "请你介绍一下什么是大模型？"
+        }
+    ]
+)
+
+# 打印生成的回复
+print(reply)
+```
+
+
+
+&emsp;&emsp;此时能够发现在上述代码中，通过在 `llm_config` 中设置 `"cache_seed": None`后可以禁用缓存功能。因此每次调用 `generate_reply` 时，都会直接向模型发送请求，而不会使用之前的缓存结果，从而每次都能得到不同的结果。&emsp;&emsp;除此以外，还可以改变`cache_seed`参数以获得不同的大模型输出，同时仍然使用缓存。比如：
+
+```
+import os
+
+from autogen import ConversableAgent
+
+agent = ConversableAgent(
+    name="chatbot",
+    llm_config={
+        "cache_seed": 24,  # 设置随机数种子
+        "config_list": 
+                [{"model": "gpt-4o-mini", 
+                  "api_key": os.environ.get("OPENAI_API_KEY")}]},
+)
+
+# 调用代理生成回复
+reply = agent.generate_reply(
+    messages=[
+        {
+            "role": "user",
+            "content": "请你介绍一下什么是大模型？"
+        }
+    ]
+)
+
+# 打印生成的回复
+print(reply)
+```
+
+![{A482B0A5-036D-4E68-BE7F-A407DECD059A}](E:\autogen_learning\assests\{A482B0A5-036D-4E68-BE7F-A407DECD059A}.png)
+
+可以看到自动在当前目录下创建了 .cacahe 文件夹里面保存了 以seed为名的缓存
+
+&emsp;&emsp;当然，如果有添加缓存的需求，除了默认的在磁盘中，也可以使用`RedisCache`或 `Cosmos DB Cache` 轻松配置大模型缓存，比如`RedisCache`的示例代码为：
+
+```python
+agent = ConversableAgent(
+    name="chatbot",
+    llm_config={
+        "config_list": 
+                [{"model": "gpt-4o-mini", 
+                  "api_key": os.environ.get("OPENAI_API_KEY")}]},
+)
+
+
+with Cache.redis(redis_url="redis://localhost:6379/0") as cache:
+    # 使用 Redis 缓存
+    reply = agent.generate_reply(
+        messages=[{"role": "user", "content": "请问什么是大模型"}],
+        cache=cache
+    )
+```
+
+&emsp;&emsp;通过使用缓存，`AutoGen` 可以在相同的输入下直接返回之前的响应结果，而无需再次调用底层的语言模型服务。既能提高响应速度，同时还可以减少对外部 `API` 的调用次数，从而降低使用成本。在重复查询、开发、测试Agent业务阶段以及在多代理系统中缓存共享的上下文信息等场景中均有实际的使用价值。
