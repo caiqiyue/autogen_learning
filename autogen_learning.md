@@ -832,3 +832,284 @@ with Cache.redis(redis_url="redis://localhost:6379/0") as cache:
 ```
 
 &emsp;&emsp;通过使用缓存，`AutoGen` 可以在相同的输入下直接返回之前的响应结果，而无需再次调用底层的语言模型服务。既能提高响应速度，同时还可以减少对外部 `API` 的调用次数，从而降低使用成本。在重复查询、开发、测试Agent业务阶段以及在多代理系统中缓存共享的上下文信息等场景中均有实际的使用价值。
+
+
+
+#### 本地开源模型
+
+&emsp;&emsp;如果大家想使用本地的开源大模型应用`AutoGen`框架构建`Agent`应用程序，因为`AutoGen`可以支持兼容 `OpenAI API` 的模型接入，***\*主要通过三种方式支持开源模型的接入，分别是：****`LiteLLM`****、****`Ollama`****和****`vLLM`****。\**** 其中`Ollama`和`vLLM`我们课程中已经有过重点的讲解，这里就不再重复性的说明，而`LiteLLM`类似于`Ollama`也是一个轻量级的大模型推理框架，会对大模型进行剪枝、量化和蒸馏等技术的应用，从而减少模型的体积和计算需求，同时保持其较好的推理能力，目的主要是在不牺牲性能的情况下，减少内存使用和计算资源的消耗。
+
+同时可以使用 `OpenAI` 格式调用所有`LLM API` [Bedrock、Huggingface、VertexAI、TogetherAI、Azure、OpenAI、Groq 等] 。
+
+LiteLLM Github：https://github.com/BerriAI/litellm
+
+![{29CAF6D9-E621-4B83-9C95-DFCB7D21729D}](E:\autogen_learning\assests\{29CAF6D9-E621-4B83-9C95-DFCB7D21729D}.png)
+
+&emsp;&emsp;最方便快捷的一种接入本地开源模型的方法就是使用`Ollama`。 该框架提供了与 `OpenAI API` 的兼容性，使得通过 `Ollama` 启动的开源模型可以与支持 `OpenAI API` 的应用程序进行集成。&emsp;&emsp;这里我们使用`Ollama`启动的`Qwen2.5：32B`进行接入，启动本地的`Ollama`模型后，我们只需要将 `API` 请求的主机名更改为 `https://127.0.0.1:11434`， 即可通过本地运行的 `Ollama` 实例与这些模型进行交互。代码如下所示：
+
+```
+import os
+
+from autogen import ConversableAgent
+
+agent = ConversableAgent(
+    name="ollama_chatbot",
+    llm_config={"config_list": 
+                [{"model": "qwen2.5:32b",
+                  "base_url": "http://192.168.110.131:11434/v1/"}]},
+)
+
+# 调用代理生成回复
+reply = agent.generate_reply(
+    messages=[
+        {
+            "role": "user",
+            "content": "你好，请你详细地介绍一下你自己啊",
+        }
+    ]
+)
+
+# 打印生成的回复
+print(reply)
+```
+
+&emsp;&emsp;同样，无论使用什么模型作为`Agent`的底层驱动，生成对输入问题的答复都统一使用 `generate_reply`方法。
+
+
+
+&emsp;&emsp;可以看到：使用 `AutoGen` 集成 `Ollama` 模型时，虽然已成功接收到回复，但会出现以下警告：
+
+> [!WARNING]
+>
+> [autogen.oai.client: 02-26 14:45:09] {351} WARNING - Model qwen2.5:3b is not found. The cost will be 0. In your config_list, add field {"price" : [prompt_price_per_1k, completion_token_price_per_1k]} for customized pricing.
+> 你好，我是来自阿里云的大规模语言模型，我叫通义千问。我会回答各种问题和完成包括生成文章、撰写报告、回答问答、创作音乐等在内的多种任务。
+>
+> 我在多个领域积累了知识，并且能够处理不同种类的任务。下面我对我的一些主要功能进行了一些介绍：
+>
+> 1. 知识查询：我能回答大量领域的专业问题，如科技、文化、历史、艺术、心理和健康等。
+> 2. 写作辅助：我可以生成文章、撰写故事开始或结束段落以及描述场景，也可以撰写邮件、报告甚至是软件代码。
+> 3. 聊天话题：我能够提供对话信息、发表见解和进行游戏等。
+> 4. 对话模拟：我能帮助完成客户服务任务，例如解答关于产品、价格的常见问题；也可用作商务谈判中的助手或在客服代表与客户之间的桥梁角色。 
+>
+> 总的来说，我是阿里云开发的一台非常智能且强大的机器学习系统。作为一个基于大规模语言数据训练的语言模型，我能够理解和交流多种形式的问题和信息，以便为用户提供更好的服务体验。
+
+&emsp;&emsp;出现此警告表示 `AutoGen` 未找到名为 `qwen2.5:32b` 的模型，因此无法计算相应的费用。如果想避免，我们可以在 `config_list` 中添加 `price` 字段，以指定每 1000 个提示（prompt）和完成（completion）标记的费用。注意，这里我们添加了不使用`LLM Cache`的配置。
+
+```
+agent = ConversableAgent(
+    name="ollama_chatbot",
+    llm_config={
+        "cache_seed": None,  # 禁用缓存
+        "config_list": [
+            {
+                "model": "qwen2.5:3b",
+                "base_url": "http://localhost:11434/v1/",
+                "price": [0.00, 0.00]
+            }
+        ]
+    },
+)
+```
+
+
+
+\- ***\*system_message 参数详解\****
+
+&emsp;&emsp;接下来我们可以测试下`ConversableAgent`类初始化参数中的`system_message`，该参数用于为代理提供上下文或设定特定的行为和规则。其默认设置如下:
+
+```
+system_message: Optional[Union[str, List]] = "You are a helpful AI Assistant."
+```
+
+&emsp;&emsp;从代码的定义中，`system_message` 默认值是 "You are a helpful AI Assistant."，也就是说，如果没有给 `system_message` 传递其他值，它会自动使用这个默认的字符串。在很多场景`system_message` 用于指导模型如何与用户交互、设定模型的角色、语言风格或行为限制等。为大模型提供系统级的指令或上下文信息，通常在聊天开始时就设定。这些消息的作用是：
+
+\- 设定模型的角色：比如你可以告诉模型它是一个客服、技术支持或产品顾问等。
+
+\- 限定模型行为：例如，告诉模型它只能回答某些问题、需要使用正式语言或者避免某些话题。
+
+\- 指定响应的风格或格式：如要求回答简洁、详细，或者以某种特定的方式呈现。
+
+&emsp;&emsp;下面是一个基于法律咨询助手的 `system_message` 示例，用于指导大模型在法律相关问题上的行为，代码如下：
+
+```
+agent = ConversableAgent(
+    name="lawyer_assistant",
+    # 添加系统信息
+    system_message = """
+    你是一个法律咨询助手，专注于提供法律相关的咨询服务。你的任务是为用户解答法律问题，但请注意，你的回答仅供参考，不能作为正式的法律意见。
+    回答应当基于法律条文和普遍的法律原则，避免提供任何违法或误导性的信息。你需要：
+    1. 提供清晰、简洁、准确的法律知识。
+    2. 在回答中避免使用非专业术语，尽量让普通用户易于理解。
+    3. 如果问题涉及具体案件，建议用户寻求专业律师的帮助。
+    4. 尊重用户隐私，不涉及任何个人数据的收集或存储。
+    """,
+    
+    llm_config={
+        "cache_seed": None,  # 禁用缓存
+        "config_list": [
+            {
+                "model": "qwen2.5:3b",
+                "base_url": "http://localhost:11434/v1/",
+                "price": [0.00, 0.00]
+            }
+        ]
+    },
+)
+
+# 调用代理生成回复
+reply = agent.generate_reply(
+    messages=[
+        {
+            "role": "user",
+            "content": "如果我遇到合同纠纷，应该如何维权？",
+        }
+    ]
+)
+
+# 打印生成的回复
+print(reply)
+```
+
+&emsp;&emsp;在很多应用中，直接让大模型从头开始理解其角色和行为约束会很低效，尤其是当大模型的默认行为可能与实际需求不符时。使用 `system_message`可以清晰地告诉大模型它的角色和需要遵循的行为规范，使得大模型的行为更加符合预期，这在`Agent`的构建过程中是非常关键的。
+
+
+
+\- ***\*description 参数详解\****
+
+&emsp;&emsp;与`system messages`类似，在`ConversableAgent`中 还有一个 `description` 可选参数用来描述代理的角色和行为。
+
+
+
+```
+agent.name
+
+lawyer_assistant
+
+agent.system_message
+    你是一个法律咨询助手，专注于提供法律相关的咨询服务。你的任务是为用户解答法律问题，但请注意，你的回答仅供参考，不能作为正式的法律意见。
+    回答应当基于法律条文和普遍的法律原则，避免提供任何违法或误导性的信息。你需要：
+    1. 提供清晰、简洁、准确的法律知识。
+    2. 在回答中避免使用非专业术语，尽量让普通用户易于理解。
+    3. 如果问题涉及具体案件，建议用户寻求专业律师的帮助。
+    4. 尊重用户隐私，不涉及任何个人数据的收集或存储。
+
+agent.description
+    你是一个法律咨询助手，专注于提供法律相关的咨询服务。你的任务是为用户解答法律问题，但请注意，你的回答仅供参考，不能作为正式的法律意见。
+    回答应当基于法律条文和普遍的法律原则，避免提供任何违法或误导性的信息。你需要：
+    1. 提供清晰、简洁、准确的法律知识。
+    2. 在回答中避免使用非专业术语，尽量让普通用户易于理解。
+    3. 如果问题涉及具体案件，建议用户寻求专业律师的帮助。
+    4. 尊重用户隐私，不涉及任何个人数据的收集或存储。
+```
+
+
+
+&emsp;&emsp;默认情况下，`description` 会自动继承 `system_message` 的内容，其源码定义位置如下：
+
+![{960E8998-FB9C-47E0-B3A9-335EFE8CE9BD}](E:\autogen_learning\assests\{960E8998-FB9C-47E0-B3A9-335EFE8CE9BD}.png)
+
+
+
+&emsp;&emsp;而如果我们希望为代理提供更具体的信息，而不仅仅依赖 `system_message`，可以显式设置 description，比如：
+
+```
+agent = ConversableAgent(
+    name="lawyer_assistant",
+    # 添加系统信息
+    system_message = "你是一个法律咨询助手，专注于提供法律相关的咨询服务",
+
+    # 添加对代理的更具体描述
+    description="专门解答有关合同、诉讼等方面的法律问题。",  # 提供更加具体的描述
+
+    llm_config={
+        "cache_seed": None,  # 禁用缓存
+        "config_list": [
+            {
+                "model": "qwen2.5:3b",
+                "base_url": "http://localhost:11434/v1/",
+                "price": [0.00, 0.00]
+            }
+        ]
+    },
+)
+
+# 调用代理生成回复
+reply = agent.generate_reply(
+    messages=[
+        {
+            "role": "user",
+            "content": "如果我遇到合同纠纷，应该如何维权？",
+        }
+    ]
+)
+
+# 打印生成的回复
+print(reply)
+```
+
+
+
+&emsp;&emsp;那么何时使用默认的 `description` ，什么时候该自定义 `description`呢？ 大家可以从以下几个方面来考虑：
+
+1. 如果希望提供更具体或更详细的信息，或者 `system_message` 的内容并不能完全概括代理的角色时，可以使用 `description` 来传递更多的上下文。`description` 可以更简洁、精确地描述该代理的具体用途或目标。例如，如果某个代理的任务是执行特定类型的计算或查询，`description` 可以是类似“执行代码分析和计算”这样的描述。
+2. `description` 在多代理架构中用来帮助其他代理了解当前代理的用途和角色。这不仅仅是为了向用户展示信息，更主要的是提供给其他代理一种上下文，用于合理地调用或路由任务。例如，在一个多代理系统中，如果多个代理有不同的任务和功能（比如一个是法律咨询代理，一个是技术支持代理），那么 `description` 可以帮助其他代理理解该代理的具体用途，便于做出正确的任务调度决策。
+3. 指导函数调用行为：在函数调用和任务调度中，`description` 通常是决定哪个代理应当接管某个任务的依据。如果系统需要将任务分配给一个合适的代理，它会查看代理的 `description` 来判断是否符合任务要求。例如，如果任务是法律相关的咨询，系统可能会根据代理的 `description` 选择一个具有法律咨询功能的代理进行处理。例如：法律咨询代理的 `description` 示例为 法律咨询助手，专门解答有关合同、诉讼等方面的法律问题， 技术支持代理的 `description` 示例为 技术支持助手，专门解答关于硬件和软件故障排查的问题等等。
+
+
+
+#### LLM配置过滤方法
+
+&emsp;&emsp;接下来我们要考虑的是，`AutoGen`中的`llm_config`为什么要设计成一个列表？当`llm_config`是一个列表的时候，意味着我们定义代理的时候可以使用的多个模型。这在构建`Agent`的过程中非常有用，主要原因如下：
+
+\- 如果一个大模型超时或失败，代理可以尝试另一种模型。
+
+\- 有一个全局模型列表，可以根据某些键（例如名称、标签）对其进行过滤，以便将选择的大模型传递给某个代理（例如，使用更便宜的 GPT 3.5 来让代理解决更简单的任务）
+
+&emsp;&emsp;`config_list`中的工作原理是默认使用配置的第一个大模型，并针对该大模型进行调用。如果调用失败（例如 API 限制），代理将针对第二个大模型发起重试请求，依此类推，直到收到提示完成（或者如果没有大模型成功完成请求，则抛出错误）。因此，我们可以通过下面的形式进行定义：
+
+```
+llm_config = {
+    "config_list": [
+        {
+            "model": "gpt-4o-mini",
+            "api_key": os.environ.get("OPENAI_API_KEY"),
+            "tags": ["openai"]
+        },
+        {
+            "model": "qwen2.5:3b",
+            "base_url": "http://localhost:11434/v1/",
+            "price": [0.00, 0.00],
+            "tags": ["ollama"]
+        }
+    ]
+}
+```
+
+&emsp;&emsp;对于大模型实例的字典，我们在使用的时候可以基于某些标准来过滤该列表。如上所示，使用 `tags`参数来为不同的代理分配特定的大模型实例。通过在 `llm_config` 的 `config_list` 中为每个模型配置添加 `tags`，然后在创建代理时使用 `filter_config`方法就可以进行筛选：
+
+![{9C14AA41-D2C2-48D3-8F62-FA611F82E653}](E:\autogen_learning\assests\{9C14AA41-D2C2-48D3-8F62-FA611F82E653}.png)
+
+```python
+import autogen
+
+# 过滤出包含 'ollama' 标签的模型配置
+filter_model = {"tags": ["ollama"]}
+
+config_model = autogen.filter_config(
+    config_list=llm_config["config_list"], 
+    filter_dict=filter_model)
+    
+agent = ConversableAgent(
+    name="ollama_chatbot",
+    llm_config={"config_list": config_model}  # 这里使用 config_model
+)
+
+reply = agent.generate_reply(messages=[{"role": "user", "content": "请问你是什么大模型呀",}])
+print(reply)
+```
+
+&emsp;&emsp;掌握`AutoGen`框架中模型过滤的技巧非常关键，这种配置方式提供了非常便捷的灵活性，能够根据具体需求选择和定制模型。在实际应用中，合理配置 `llm_config` 可以实现多代理协作、自动代码生成、复杂任务处理等功能。在开发过程中对于构建高效、智能的对话系统和自动化工作流都有非常广泛的使用场景和开发需求。
+
+
+
+### CodeExcutor
