@@ -1,0 +1,36 @@
+{
+  "project": "autogen-course-demo",
+  "timestamp": "2026-05-28T12:08:56.700079",
+  "summary": {
+    "total": 3,
+    "passed": 0,
+    "failed": 3,
+    "success_rate": 0.0
+  },
+  "results": [
+    {
+      "scenario_id": "test_01",
+      "success": false,
+      "execution_time_ms": 16.55411720275879,
+      "token_used": 37,
+      "error_message": "",
+      "timestamp": "2026-05-28T12:08:56.683204"
+    },
+    {
+      "scenario_id": "test_02",
+      "success": false,
+      "execution_time_ms": 0.0,
+      "token_used": 0,
+      "error_message": "测试执行超时",
+      "timestamp": "2026-05-28T12:08:56.683204"
+    },
+    {
+      "scenario_id": "test_03",
+      "success": false,
+      "execution_time_ms": 15.216350555419922,
+      "token_used": 31,
+      "error_message": "",
+      "timestamp": "2026-05-28T12:08:56.698420"
+    }
+  ]
+}

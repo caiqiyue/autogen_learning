@@ -1,0 +1,320 @@
+{
+  "course_structure": {
+    "total_lessons": 28,
+    "phase_break": 15,
+    "phases": {
+      "phase_1": "核心机制",
+      "phase_2": "高级特性+企业实践"
+    },
+    "lessons": [
+      {
+        "lesson_id": "lesson_01",
+        "title": "AutoGen概述与开发环境搭建",
+        "hours": 1,
+        "has_code_example": true,
+        "code_example": "autogen_getting_started.py",
+        "framework_ref": ["mod_001"],
+        "phase": 1,
+        "cognitive_level": "概念建立"
+      },
+      {
+        "lesson_id": "lesson_02",
+        "title": "AutoGen vs LangChain vs CrewAI 框架对比",
+        "hours": 1,
+        "has_code_example": false,
+        "framework_ref": ["mod_001"],
+        "phase": 1,
+        "cognitive_level": "概念建立"
+      },
+      {
+        "lesson_id": "lesson_03",
+        "title": "ConversableAgent核心架构解析",
+        "hours": 2,
+        "has_code_example": true,
+        "code_example": "conversable_agent_core.py",
+        "framework_ref": ["mod_002"],
+        "phase": 1,
+        "cognitive_level": "核心机制"
+      },
+      {
+        "lesson_id": "lesson_04",
+        "title": "generate_reply策略链与register_reply深度掌握",
+        "hours": 2,
+        "has_code_example": true,
+        "code_example": "register_reply_advanced.py",
+        "framework_ref": ["mod_002"],
+        "phase": 1,
+        "cognitive_level": "核心机制"
+      },
+      {
+        "lesson_id": "lesson_05",
+        "title": "max_consecutive_auto_reply与轮次控制",
+        "hours": 1,
+        "has_code_example": true,
+        "code_example": "max_consecutive_auto_reply_demo.py",
+        "framework_ref": ["mod_002", "mod_007"],
+        "phase": 1,
+        "cognitive_level": "核心机制"
+      },
+      {
+        "lesson_id": "lesson_06",
+        "title": "Code Executor配置与安全机制",
+        "hours": 2,
+        "has_code_example": true,
+        "code_example": "code_executor_intro.py",
+        "framework_ref": ["mod_004"],
+        "phase": 1,
+        "cognitive_level": "执行层"
+      },
+      {
+        "lesson_id": "lesson_07",
+        "title": "Function Calling与register_function用法",
+        "hours": 2,
+        "has_code_example": true,
+        "code_example": "function_calling_demo.py",
+        "framework_ref": ["mod_004"],
+        "phase": 1,
+        "cognitive_level": "执行层"
+      },
+      {
+        "lesson_id": "lesson_08",
+        "title": "Code Executor vs Tool Executor决策框架",
+        "hours": 1,
+        "has_code_example": true,
+        "code_example": "executor_decision_tree.py",
+        "framework_ref": ["mod_004"],
+        "phase": 1,
+        "cognitive_level": "执行层"
+      },
+      {
+        "lesson_id": "lesson_09",
+        "title": "GroupChat与多Agent协作模式",
+        "hours": 2,
+        "has_code_example": true,
+        "code_example": "groupchat_basic.py",
+        "framework_ref": ["mod_003"],
+        "phase": 1,
+        "cognitive_level": "协作模式"
+      },
+      {
+        "lesson_id": "lesson_10",
+        "title": "speaker_selection_mode三种策略详解",
+        "hours": 2,
+        "has_code_example": true,
+        "code_example": "speaker_selection_demo.py",
+        "framework_ref": ["mod_003"],
+        "phase": 1,
+        "cognitive_level": "协作模式"
+      },
+      {
+        "lesson_id": "lesson_11",
+        "title": "GroupChat终止条件与常见问题处理",
+        "hours": 1,
+        "has_code_example": true,
+        "code_example": "groupchat_termination.py",
+        "framework_ref": ["mod_003"],
+        "phase": 1,
+        "cognitive_level": "协作模式"
+      },
+      {
+        "lesson_id": "lesson_12",
+        "title": "LLM配置与多模型fallback机制",
+        "hours": 2,
+        "has_code_example": true,
+        "code_example": "llm_config_fallback.py",
+        "framework_ref": ["mod_005"],
+        "phase": 1,
+        "cognitive_level": "配置管理"
+      },
+      {
+        "lesson_id": "lesson_13",
+        "title": "本地模型接入：Ollama/vLLM/LiteLLM",
+        "hours": 2,
+        "has_code_example": true,
+        "code_example": "local_model_setup.py",
+        "framework_ref": ["mod_005"],
+        "phase": 1,
+        "cognitive_level": "配置管理"
+      },
+      {
+        "lesson_id": "lesson_14",
+        "title": "AutoGen缓存机制与成本控制",
+        "hours": 1,
+        "has_code_example": true,
+        "code_example": "cache_config.py",
+        "framework_ref": ["mod_005"],
+        "phase": 1,
+        "cognitive_level": "配置管理"
+      },
+      {
+        "lesson_id": "lesson_15",
+        "title": "ConversableAgent对话模式综合实战",
+        "hours": 2,
+        "has_code_example": true,
+        "code_example": "conversation_modes_demo.py",
+        "framework_ref": ["mod_002", "mod_003", "mod_004"],
+        "phase": 1,
+        "cognitive_level": "综合应用"
+      },
+      {
+        "lesson_id": "lesson_16",
+        "title": "AssistantAgent基础与典型应用场景",
+        "hours": 1,
+        "has_code_example": true,
+        "code_example": "assistant_agent_basics.py",
+        "framework_ref": ["mod_006"],
+        "phase": 2,
+        "cognitive_level": "Agent子类"
+      },
+      {
+        "lesson_id": "lesson_17",
+        "title": "UserProxyAgent三种human_input_mode详解",
+        "hours": 1,
+        "has_code_example": true,
+        "code_example": "user_proxy_agent_modes.py",
+        "framework_ref": ["mod_006", "mod_007"],
+        "phase": 2,
+        "cognitive_level": "Agent子类"
+      },
+      {
+        "lesson_id": "lesson_18",
+        "title": "AssistantAgent与UserProxyAgent协作模式",
+        "hours": 2,
+        "has_code_example": true,
+        "code_example": "agent_collaboration.py",
+        "framework_ref": ["mod_006"],
+        "phase": 2,
+        "cognitive_level": "Agent子类"
+      },
+      {
+        "lesson_id": "lesson_19",
+        "title": "自定义Agent子类化与扩展",
+        "hours": 1,
+        "has_code_example": true,
+        "code_example": "custom_agent_subclass.py",
+        "framework_ref": ["mod_006"],
+        "phase": 2,
+        "cognitive_level": "Agent子类"
+      },
+      {
+        "lesson_id": "lesson_20",
+        "title": "异步Agent与async/await模式",
+        "hours": 2,
+        "has_code_example": true,
+        "code_example": "async_agent_demo.py",
+        "framework_ref": ["mod_008"],
+        "phase": 2,
+        "cognitive_level": "高级特性"
+      },
+      {
+        "lesson_id": "lesson_21",
+        "title": "嵌套对话与并发协作机制",
+        "hours": 2,
+        "has_code_example": true,
+        "code_example": "nested_concurrent_chat.py",
+        "framework_ref": ["mod_008"],
+        "phase": 2,
+        "cognitive_level": "高级特性"
+      },
+      {
+        "lesson_id": "lesson_22",
+        "title": "AutoGen与LangChain集成：Agent as Tool",
+        "hours": 2,
+        "has_code_example": true,
+        "code_example": "langchain_integration.py",
+        "framework_ref": ["mod_009"],
+        "phase": 2,
+        "cognitive_level": "系统集成"
+      },
+      {
+        "lesson_id": "lesson_23",
+        "title": "AutoGen与RAG知识库集成",
+        "hours": 2,
+        "has_code_example": true,
+        "code_example": "rag_integration.py",
+        "framework_ref": ["mod_009"],
+        "phase": 2,
+        "cognitive_level": "系统集成"
+      },
+      {
+        "lesson_id": "lesson_24",
+        "title": "企业级AutoGen架构设计",
+        "hours": 2,
+        "has_code_example": true,
+        "code_example": "enterprise_architecture.py",
+        "framework_ref": ["mod_010"],
+        "phase": 2,
+        "cognitive_level": "企业实践"
+      },
+      {
+        "lesson_id": "lesson_25",
+        "title": "Vibe Coding工作流与AI辅助编程",
+        "hours": 2,
+        "has_code_example": true,
+        "code_example": "vibe_coding_workflow.py",
+        "framework_ref": ["mod_010"],
+        "phase": 2,
+        "cognitive_level": "企业实践"
+      },
+      {
+        "lesson_id": "lesson_26",
+        "title": "AutoGen可观测性与自动化测试",
+        "hours": 2,
+        "has_code_example": true,
+        "code_example": "autogen_observability.py",
+        "framework_ref": ["mod_010"],
+        "phase": 2,
+        "cognitive_level": "企业实践"
+      },
+      {
+        "lesson_id": "lesson_27",
+        "title": "AutoGen高频误区与调试技巧",
+        "hours": 2,
+        "has_code_example": true,
+        "code_example": "common_pitfalls.py",
+        "framework_ref": ["mod_011"],
+        "phase": 2,
+        "cognitive_level": "最佳实践"
+      },
+      {
+        "lesson_id": "lesson_28",
+        "title": "8大误区案例分析与代码审查清单",
+        "hours": 1,
+        "has_code_example": false,
+        "framework_ref": ["mod_011"],
+        "phase": 2,
+        "cognitive_level": "最佳实践"
+      }
+    ]
+  },
+  "revision_notes": {
+    "audit_issues_addressed": [
+      "审核问题1：mod_006拆分为4课时(lesson_16~19)",
+      "审核问题2：CodeExecutor(mod_004)调整至GroupChat(mod_003)之前",
+      "审核问题3：lesson_21(嵌套对话与并发协作)已添加代码示例nested_concurrent_chat.py",
+      "审核问题4：分为两阶段，phase_1(lesson_01~15)核心机制，phase_2(lesson_16~28)高级特性+企业实践"
+    ],
+    "cognitive_progression": [
+      "phase_1: 概念建立 → 核心机制 → 执行层 → 协作模式 → 配置管理",
+      "phase_2: Agent子类 → 高级特性 → 系统集成 → 企业实践 → 最佳实践"
+    ],
+    "module_distribution": {
+      "mod_001": ["lesson_01", "lesson_02"],
+      "mod_002": ["lesson_03", "lesson_04", "lesson_05", "lesson_15"],
+      "mod_003": ["lesson_09", "lesson_10", "lesson_11"],
+      "mod_004": ["lesson_06", "lesson_07", "lesson_08"],
+      "mod_005": ["lesson_12", "lesson_13", "lesson_14"],
+      "mod_006": ["lesson_16", "lesson_17", "lesson_18", "lesson_19"],
+      "mod_007": ["lesson_05", "lesson_17"],
+      "mod_008": ["lesson_20", "lesson_21"],
+      "mod_009": ["lesson_22", "lesson_23"],
+      "mod_010": ["lesson_24", "lesson_25", "lesson_26"],
+      "mod_011": ["lesson_27", "lesson_28"]
+    },
+    "total_lessons": 28,
+    "phase_1_lessons": 15,
+    "phase_2_lessons": 13,
+    "lessons_with_code_examples": 24,
+    "lessons_without_code_examples": 4
+  }
+}

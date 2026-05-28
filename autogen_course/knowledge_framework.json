@@ -1,0 +1,421 @@
+{
+  "framework": {
+    "title": "AutoGen 企业级AI Agent开发框架",
+    "version": "2.0",
+    "prerequisite": {
+      "knowledge": ["Python基础", "大模型基本概念", "API调用基础"],
+      "tools": ["Python 3.10+", "pip", "Docker (可选,用于代码执行)"]
+    },
+    "learning_path": "递进式：从单Agent核心机制 → 多Agent协作 → 高级特性 → 企业实践",
+    "modules": [
+      {
+        "id": "mod_001",
+        "title": "模块一：AutoGen框架基础与核心概念",
+        "type": "基础入门",
+        "position": 1,
+        "cover_issues": ["框架定位澄清"],
+        "learning_objectives": [
+          "理解AutoGen与传统单模型应用的根本差异",
+          "掌握AutoGen中'对话式应用'的真正含义——Agent间协作而非UI交互",
+          "了解AutoGen框架的三大核心特征：Agent定制、多Agent对话、灵活对话模式",
+          "理解ConversableAgent作为能力聚合体的架构设计理念"
+        ],
+        "deliverables": ["理解AutoGen适用场景与边界", "能判断何时应选用AutoGen而非LangChain/CrewAI"],
+        "content_highlights": [
+          "AutoGen vs LangChain vs CrewAI vs LlamaIndex 框架对比",
+          "ConversableAgent四组件：LLM + Code Executor + Tool Executor + Human-in-the-loop",
+          "五种对话模式：Two-Agent Chat / Group Chat / Hierarchical Chat / Sequential Chat / Collaborative Reasoning"
+        ]
+      },
+      {
+        "id": "mod_002",
+        "title": "模块二：ConversableAgent核心机制深度解析",
+        "type": "核心机制",
+        "position": 2,
+        "cover_issues": ["审核问题3: reply_func回调机制", "审核问题5: max_consecutive_auto_reply缺失"],
+        "learning_objectives": [
+          "掌握generate_reply的完整执行流程与策略链机制",
+          "深度理解register_reply方法：reply_func_list优先级链与自定义注册",
+          "掌握max_consecutive_auto_reply参数对对对话轮次控制的原理",
+          "理解is_termination_msg回调函数的编写规范",
+          "掌握ConversableAgent的四种human_input_mode及其触发条件"
+        ],
+        "deliverables": [
+          "能够自定义reply_func并正确设置trigger条件",
+          "能够使用register_reply实现基于消息内容/发送者/正则的条件触发",
+          "能够合理配置max_consecutive_auto_reply实现精确的轮次控制"
+        ],
+        "content_highlights": [
+          "generate_reply源码解析：策略链遍历顺序与final标志中断机制",
+          "register_reply深度解析：trigger类型（str/regex/callable）、config传参模式、链式注册优先级",
+          "max_consecutive_auto_reply与MAX_CONSECUTIVE_AUTO_REPLY类属性的交互逻辑",
+          "is_termination_msg编写模式：字典键值提取与多条件组合"
+        ],
+        "code_examples": [
+          "register_reply条件触发完整示例（消息内容/发送者/正则三种模式）",
+          "max_consecutive_auto_reply=0实现单次回复模式",
+          "组合终止条件：is_termination_msg + max_consecutive_auto_reply双重保险"
+        ]
+      },
+      {
+        "id": "mod_003",
+        "title": "模块三：多Agent协作与GroupChat高级机制",
+        "type": "核心机制",
+        "position": 3,
+        "cover_issues": ["审核问题1: GroupChat终止条件缺失", "审核问题4: 学习路径依赖"],
+        "learning_objectives": [
+          "掌握GroupChatManager的speaker_selection_mode三种策略及其适用场景",
+          "深度理解max_round参数对对话轮数上限的控制机制",
+          "掌握is_termination_msg在GroupChat场景下的特殊行为",
+          "掌握GroupChat的发言策略选择决策框架：auto vs manual vs allow_repeat",
+          "理解多Agent对话中的上下文传递与状态管理机制"
+        ],
+        "deliverables": [
+          "能够根据业务场景选择合适的speaker_selection_mode",
+          "能够配置GroupChat的终止条件实现复杂的工作流控制",
+          "能够处理GroupChat中的典型问题：死循环、发言不均、过早终止"
+        ],
+        "content_highlights": [
+          "speaker_selection_mode深度对比：auto（LLM推荐）/ manual（人类指定）/ allow_repeat（允许重复）",
+          "max_round与is_termination_msg的交互：两者共同决定终止时机",
+          "GroupChatManager源码解析：selected_agent选择逻辑与消息广播机制",
+          "nested group chat模式：子群聊的创建与层级管理"
+        ],
+        "code_examples": [
+          "speaker_selection_mode='auto'场景：让LLM根据上下文推荐下一个发言者",
+          "speaker_selection_mode='manual'场景：人类控制对话走向",
+          "max_round=10且is_termination_msg双重条件下的终止流程",
+          "allow_repeat='never'避免同一Agent连续发言"
+        ]
+      },
+      {
+        "id": "mod_004",
+        "title": "模块四：代码执行器与工具执行器",
+        "type": "核心机制",
+        "position": 4,
+        "cover_issues": ["审核问题2: Tool Call机制缺失", "审核问题5: max_consecutive_auto_reply部分覆盖"],
+        "learning_objectives": [
+          "掌握Code Executor的配置：work_dir、use_docker、timeout、last_n_messages",
+          "掌握register_function与register_for_llm_call的用法对比与选择决策框架",
+          "理解Tool Call与Code Executor的适用场景边界与选择决策树",
+          "掌握function_map参数与register_function的异同",
+          "理解Code Executor的安全机制：docker隔离与环境配置"
+        ],
+        "deliverables": [
+          "能够根据任务类型选择Code Executor或Tool Executor",
+          "能够使用register_function注册自定义工具并正确配置LLM调用",
+          "能够处理Tool Call与Code Executor的混合使用场景"
+        ],
+        "content_highlights": [
+          "Code Executor vs Tool Executor决策框架：计算密集型选前者、业务操作型选后者",
+          "register_function源码解析：函数注册到LLM function calling的映射过程",
+          "register_for_llm_call vs register_for_exec：只让LLM知道 vs 完整注册执行链",
+          "last_n_messages='auto'的动态回溯机制解析"
+        ],
+        "code_examples": [
+          "使用register_function注册计算器工具并配置LLM调用",
+          "register_for_llm_call + register_for_exec组合使用示例",
+          "Code Executor执行失败时的fallback策略",
+          "Docker环境配置与use_docker=False的开发调试模式"
+        ]
+      },
+      {
+        "id": "mod_005",
+        "title": "模块五：LLM配置与模型接入",
+        "type": "配置管理",
+        "position": 5,
+        "cover_issues": ["审核问题6: mod_008与mod_005内容重叠"],
+        "learning_objectives": [
+          "掌握llm_config的完整结构：config_list、cache_seed、price配置",
+          "掌握多模型fallback机制与tags过滤策略",
+          "掌握本地开源模型接入：Ollama、vLLM、LiteLLM的配置差异",
+          "理解Azure OpenAI与企业内网模型接入的特殊配置",
+          "掌握AutoGen缓存机制：DiskCache、RedisCache的配置与适用场景"
+        ],
+        "deliverables": [
+          "能够配置多模型fallback实现高可用接入",
+          "能够使用filter_config根据tags筛选模型",
+          "能够在本地部署Ollama/vLLM并成功接入AutoGen",
+          "能够根据成本需求选择合适的缓存策略"
+        ],
+        "content_highlights": [
+          "config_list优先级与重试机制的源码解析",
+          "LiteLLM vs Ollama vs vLLM接入方式对比",
+          "price字段配置与成本控制策略",
+          "cache_seed=None禁用缓存的实现原理"
+        ],
+        "code_examples": [
+          "config_list配置gpt-4o-mini + qwen2.5:3b双模型fallback",
+          "使用filter_config根据'tags': ['ollama']筛选本地模型",
+          "Ollama接入AutoGen完整配置（含price字段消除警告）",
+          "RedisCache配置实现分布式缓存共享"
+        ]
+      },
+      {
+        "id": "mod_006",
+        "title": "模块六：AssistantAgent与UserProxyAgent应用",
+        "type": "Agent子类",
+        "position": 6,
+        "cover_issues": ["审核问题4: mod_003原位置调整"],
+        "learning_objectives": [
+          "掌握AssistantAgent的典型应用场景与默认行为",
+          "掌握UserProxyAgent的三种human_input_mode与代理行为切换",
+          "理解AssistantAgent与ConversableAgent的继承关系与扩展点",
+          "掌握UserProxyAgent与Code Executor的集成方式",
+          "能够根据业务场景选择合适的Agent子类"
+        ],
+        "deliverables": [
+          "能够使用AssistantAgent快速构建任务执行代理",
+          "能够使用UserProxyAgent配置人机协作工作流",
+          "能够实现AssistantAgent + UserProxyAgent的标准协作模式"
+        ],
+        "content_highlights": [
+          "AssistantAgent默认system_message与代码执行能力的内置集成",
+          "UserProxyAgent三种模式：ALWAYS/NEVER/TERMINATE的行为差异",
+          "UserProxyAgent作为人类代表在GroupChat中的特殊角色",
+          "子类扩展模式：继承ConversableAgent自定义专用Agent"
+        ],
+        "code_examples": [
+          "AssistantAgent配置法律咨询助手",
+          "UserProxyAgent(human_input_mode='TERMINATE')实现关键节点人工审批",
+          "UserProxyAgent作为代码执行器与LLM驱动的AssistantAgent协作",
+          "自定义子类实现特定领域的专业Agent"
+        ]
+      },
+      {
+        "id": "mod_007",
+        "title": "模块七：人类参与接口与对话控制",
+        "type": "高级特性",
+        "position": 7,
+        "cover_issues": ["审核问题5: max_consecutive_auto_reply深度讲解"],
+        "learning_objectives": [
+          "深度掌握human_input_mode三种模式的内部触发逻辑",
+          "掌握max_consecutive_auto_reply与human_input_mode的交互机制",
+          "掌握在GroupChat场景下的人类干预策略",
+          "理解何时应该引入人类参与以及何时应该保持自动化",
+          "掌握实现复杂的人类审查节点工作流的设计模式"
+        ],
+        "deliverables": [
+          "能够设计需要人类在特定节点介入的工作流",
+          "能够处理human_input_mode='ALWAYS'下的输入拦截与验证",
+          "能够在GroupChat中配置人类作为特殊参与者控制对话走向"
+        ],
+        "content_highlights": [
+          "human_input_mode='TERMINATE'时is_termination_msg与max_consecutive_auto_reply的终止条件差异",
+          "人类输入'exit'作为强制终止信号的源码实现",
+          "在Hierarchical Chat中，人类作为顶层Manager的特殊配置",
+          "人类参与的安全边界设计：防止人类过度干预导致系统停滞"
+        ],
+        "code_examples": [
+          "多轮对话后强制要求人类审批的设计实现",
+          "max_consecutive_auto_reply=5 + human_input_mode='TERMINATE'组合控制",
+          "GroupChat中人类作为speaker_selection_mode='manual'的决策者",
+          "高风险操作前的人类二次确认工作流"
+        ]
+      },
+      {
+        "id": "mod_008",
+        "title": "模块八：异步Agent与并发协作",
+        "type": "高级特性",
+        "position": 8,
+        "cover_issues": ["审核问题7: 异步Agent缺失"],
+        "learning_objectives": [
+          "掌握AutoGen异步编程模型：async/await模式的核心概念",
+          "掌握a_generate_reply与generate_reply的区别与适用场景",
+          "理解嵌套对话（Nested Chat）的异步处理机制",
+          "掌握GroupChat中的并发发言与顺序控制机制",
+          "能够设计高效的异步多Agent协作工作流"
+        ],
+        "deliverables": [
+          "能够使用async模式构建异步Agent",
+          "能够在异步环境中正确处理GroupChat的并发问题",
+          "能够实现嵌套对话中的异步消息传递"
+        ],
+        "content_highlights": [
+          "async Agent的定义规范与事件循环集成",
+          "a_generate_reply源码解析：协程与同步函数的混合处理",
+          "inspect.iscoroutinefunction在策略链中的判断逻辑",
+          "嵌套对话中的sender属性与消息溯源机制"
+        ],
+        "code_examples": [
+          "async def自定义异步reply_func的实现",
+          "asyncio.gather实现多Agent并发对话收集结果",
+          "嵌套GroupChat中的异步消息传递示例",
+          "异步环境下的超时控制与超时异常处理"
+        ]
+      },
+      {
+        "id": "mod_009",
+        "title": "模块九：AutoGen与主流技术栈集成",
+        "type": "集成应用",
+        "position": 9,
+        "cover_issues": ["审核问题9: mod_009铺垫不足"],
+        "prerequisites": [
+          "完成mod_001至mod_008的学习",
+          "具备LangChain或LangGraph基础概念（了解Chain/Agent/Tool的区别）",
+          "了解向量数据库与RAG的基本原理"
+        ],
+        "learning_objectives": [
+          "掌握AutoGen与LangChain的集成模式：Agent as Tool",
+          "掌握AutoGen作为LangGraph中某个节点的实现方式",
+          "理解AutoGen与LangChain生态的互补关系：AutoGen擅长对话协作、LangChain擅长流程编排",
+          "掌握AutoGen与RAG系统的集成：让Agent具备知识检索能力",
+          "能够设计AutoGen作为执行器、LangChain/LangGraph作为编排器的混合架构"
+        ],
+        "deliverables": [
+          "能够将AutoGen Agent封装为LangChain可调用的Tool",
+          "能够在LangGraph中嵌入AutoGen多Agent协作作为条件分支节点",
+          "能够实现AutoGen + RAG的检索增强对话系统"
+        ],
+        "content_highlights": [
+          "LangChain ConversationalAgent / ConversationalReactAgent 对比 AutoGen的对话模式",
+          "AutoGen Agent包装为LangChain Tool的接口映射",
+          "LangGraph状态机中嵌入AutoGen GroupChat的条件节点设计",
+          "AutoGen与RAG集成：检索结果作为Agent上下文注入"
+        ],
+        "code_examples": [
+          "AutoGen Agent作为LangChain Tool的完整包装示例",
+          "LangGraph中使用AutoGen GroupChat作为条件分支节点",
+          "AutoGen + RAG知识库问答系统架构设计",
+          "混合架构：LangGraph编排 + AutoGen执行 + RAG检索"
+        ]
+      },
+      {
+        "id": "mod_010",
+        "title": "模块十：企业级AutoGen应用架构设计",
+        "type": "企业实践",
+        "position": 10,
+        "cover_issues": ["审核问题6: mod_008核心内容已合并至mod_005"],
+        "learning_objectives": [
+          "掌握企业内网AI部署架构设计与AutoGen的集成",
+          "掌握多租户场景下AutoGen Agent的资源隔离与配置管理",
+          "掌握AutoGen在Vibe Coding场景中的应用：AI辅助编程工作流设计",
+          "理解AutoGen应用的监控、日志与可观测性设计",
+          "掌握AutoGen与CI/CD集成的自动化测试策略"
+        ],
+        "deliverables": [
+          "能够设计企业内网环境下的AutoGen多Agent部署架构",
+          "能够基于Vibe Coding理念设计AI辅助编程工作流",
+          "能够为AutoGen应用设计完整的可观测性方案",
+          "能够实现AutoGen应用的自动化冒烟测试"
+        ],
+        "content_highlights": [
+          "企业内网AI部署架构：LLM网关 + 模型调度 + AutoGen Agent Pool",
+          "Vibe Coding工作流：UserProxyAgent(代码执行) + AssistantAgent(代码生成) + ReviewAgent(审查)",
+          "AutoGen可观测性设计：对话链路追踪、Token消耗监控、异常告警",
+          "AutoGen应用的容错设计：Agent失败隔离与自动恢复"
+        ],
+        "code_examples": [
+          "基于企业LLM网关的多模型自动切换配置",
+          "Vibe Coding场景：代码生成 → 执行验证 → 修正循环",
+          "AutoGen应用集成Prometheus监控指标暴露",
+          "使用pytest实现AutoGen多Agent协作的自动化测试"
+        ]
+      },
+      {
+        "id": "mod_011",
+        "title": "模块十一：AutoGen最佳实践与高频误区",
+        "type": "最佳实践",
+        "position": 11,
+        "cover_issues": ["审核问题8: mod_011过于空泛"],
+        "learning_objectives": [
+          "通过8个真实高频误区案例，深入理解AutoGen的常见陷阱与规避方案",
+          "掌握每个误区的根因分析、后果评估与代码级修复方案",
+          "形成AutoGen开发的反模式认知，避免在实际项目中重蹈覆辙",
+          "理解AutoGen调试技巧与问题定位方法"
+        ],
+        "deliverables": [
+          "能够识别并规避AutoGen开发中的高频误区",
+          "掌握AutoGen应用的调试日志配置与问题定位方法",
+          "形成良好的AutoGen开发习惯与代码审查清单"
+        ],
+        "cases": [
+          {
+            "id": "case_001",
+            "title": "误区一：is_termination_msg条件设置过宽导致对话无法终止",
+            "description": "常见问题：is_termination_msg返回True条件过于宽泛或过于严格，导致对话无法正常结束或过早终止",
+            "root_cause": "对消息内容的多样性估计不足，条件判断过于简单",
+            "consequence": "GroupChat陷入死循环或用户无法获得最终结果",
+            "fix": "使用多条件组合+日志输出调试"
+          },
+          {
+            "id": "case_002",
+            "title": "误区二：max_consecutive_auto_reply设置为None导致无限循环",
+            "description": "常见问题：未显式设置max_consecutive_auto_reply，依赖默认值，导致某些场景下Agent持续自说自话",
+            "root_cause": "对MAX_CONSECUTIVE_AUTO_REPLY默认值误解，认为None表示无限制",
+            "consequence": "Token消耗失控、API成本暴涨",
+            "fix": "显式设置max_consecutive_auto_reply=5/10等合理值"
+          },
+          {
+            "id": "case_003",
+            "title": "误区三：在GroupChat中忘记设置speaker_selection_mode导致随机发言",
+            "root_cause": "未理解auto模式的LLM推荐逻辑，可能推荐不合适的下一个发言者",
+            "consequence": "对话质量不可控、发言顺序混乱",
+            "fix": "根据场景选择manual或显式配置auto模式的提示词"
+          },
+          {
+            "id": "case_004",
+            "title": "误区四：Tool Call与Code Executor混用导致行为不一致",
+            "root_cause": "register_function和register_for_llm_call配置混淆",
+            "consequence": "LLM知道工具存在但无法执行，或执行结果未反馈给LLM",
+            "fix": "使用register_for_llm_call + register_for_exec组合，明确职责分离"
+          },
+          {
+            "id": "case_005",
+            "title": "误区五：在async代码中使用同步generate_reply导致死锁",
+            "root_cause": "在异步上下文中调用同步方法，阻塞事件循环",
+            "consequence": "多Agent并发场景下系统假死",
+            "fix": "异步环境统一使用a_generate_reply"
+          },
+          {
+            "id": "case_006",
+            "title": "误区六：llm_config设置为False但仍期望Agent自动生成回复",
+            "root_cause": "将llm_config=False理解为禁用LLM，导致Agent无法生成回复",
+            "consequence": "Agent始终返回空回复或default_auto_reply",
+            "fix": "明确llm_config=False仅用于纯代码执行或人工输入场景"
+          },
+          {
+            "id": "case_007",
+            "title": "误区七：嵌套GroupChat中的状态污染",
+            "root_cause": "未理解nested group chat的消息隔离机制，子群聊消息混入父群聊",
+            "consequence": "GroupChatManager状态混乱、消息溯源失败",
+            "fix": "正确配置chat_messages参数实现消息隔离"
+          },
+          {
+            "id": "case_008",
+            "title": "误区八：未配置price字段导致成本计算不准确",
+            "root_cause": "使用非OpenAI模型时未配置price字段，AutoGen无法计算成本",
+            "consequence": "成本监控失效、预算超支风险",
+            "fix": "在config_list中为每个模型配置price: [0.00, 0.00]或实际费率"
+          }
+        ]
+      }
+    ],
+    "module_count": 11,
+    "revision_notes": {
+      "v2.0_changes": [
+        "合并mod_005与mod_008，消除内容重叠",
+        "mod_003拆分为mod_003（多Agent协作）与mod_006（AssistantAgent/UserProxyAgent）",
+        "mod_004提前至mod_003位置，解决学习路径依赖",
+        "新增mod_008（异步Agent），填补async/await机制空白",
+        "新增mod_010.5概念（企业架构设计）融入mod_010",
+        "mod_011彻底重写为8+案例驱动的误区详解",
+        "mod_009增加前置要求说明，解决铺垫不足问题",
+        "所有模块增加cover_issues字段，标记解决的问题"
+      ],
+      "cognitive_progression": [
+        "mod_001: 概念建立（是什么）",
+        "mod_002: 核心机制（怎么工作）",
+        "mod_003: 协作模式（如何配合）",
+        "mod_004: 执行层（工具与代码）",
+        "mod_005: 配置管理（接入配置）",
+        "mod_006: Agent子类（具体实现）",
+        "mod_007: 人类参与（控制机制）",
+        "mod_008: 异步高级特性（性能扩展）",
+        "mod_009: 系统集成（生态整合）",
+        "mod_010: 企业架构（生产落地）",
+        "mod_011: 最佳实践（避坑指南）"
+      ]
+    }
+  }
+}

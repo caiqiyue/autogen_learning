@@ -1,0 +1,64 @@
+{
+  "title": "Microsoft AutoGen 框架完整指南",
+  "description": "从基础概念到企业级架构，系统掌握 AutoGen 多 Agent 协作框架",
+  "subject": "AutoGen Framework",
+  "language": "zh-CN",
+  "total_lessons": 28,
+  "total_modules": 10,
+  "modules": [
+    {
+      "id": "part_01",
+      "title": "AutoGen框架基础与核心概念",
+      "lessons": ["lesson_01", "lesson_02"]
+    },
+    {
+      "id": "part_02",
+      "title": "ConversableAgent核心机制深度解析",
+      "lessons": ["lesson_03", "lesson_04", "lesson_05"]
+    },
+    {
+      "id": "part_03",
+      "title": "代码执行器与工具执行器",
+      "lessons": ["lesson_06", "lesson_07", "lesson_08"]
+    },
+    {
+      "id": "part_04",
+      "title": "多Agent协作与GroupChat高级机制",
+      "lessons": ["lesson_09", "lesson_10", "lesson_11"]
+    },
+    {
+      "id": "part_05",
+      "title": "LLM配置与模型接入",
+      "lessons": ["lesson_12", "lesson_13", "lesson_14"]
+    },
+    {
+      "id": "part_06",
+      "title": "AssistantAgent与UserProxyAgent应用",
+      "lessons": ["lesson_15", "lesson_16", "lesson_17", "lesson_18", "lesson_19"]
+    },
+    {
+      "id": "part_07",
+      "title": "异步Agent与并发协作",
+      "lessons": ["lesson_20", "lesson_21"]
+    },
+    {
+      "id": "part_08",
+      "title": "AutoGen与主流技术栈集成",
+      "lessons": ["lesson_22", "lesson_23"]
+    },
+    {
+      "id": "part_09",
+      "title": "企业级AutoGen应用架构设计",
+      "lessons": ["lesson_24", "lesson_25", "lesson_26"]
+    },
+    {
+      "id": "part_10",
+      "title": "AutoGen最佳实践与高频误区",
+      "lessons": ["lesson_27", "lesson_28"]
+    }
+  ],
+  "build_info": {
+    "generated_at": "2026-05-27",
+    "version": "1.0.0"
+  }
+}
